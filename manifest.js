@@ -21,32 +21,41 @@ module.exports = {
         host: process.env.HAPI_HOST,
         port: process.env.HAPI_PORT
     },
-    register: [
-        // Documentation via Swagger
-        {
-            plugin: Inert
-        },
-        {
-            plugin: Vision
-        },
-        {
-            plugin: HapiSwagger,
-            options: swaggerOptions
-        },
-        // Pretty logs
-        {
-            plugin: HapiPino,
-            options: {
-                prettyPrint: true, //config.nodeEnv !== 'production',
-                logEvents: 'error'//['response', 'onPostStart']
-            }
-        },
-        // Routes
-        {
-            plugin: './routes/user'
-        },
-        {
-            plugin: './routes/movie'
-        }
-    ]
+    register: {
+        plugins: [
+            // Custom JSON Web Token Bearer plugin saved as plugin for simpler operation
+            {
+                plugin: './plugins/authWrapper'
+            },
+            // Documentation via Swagger
+            {
+                plugin: Inert
+            },
+            {
+                plugin: Vision
+            },
+            {
+                plugin: HapiSwagger,
+                options: swaggerOptions
+            },
+            // Pretty logs
+            {
+                plugin: HapiPino,
+                options: {
+                    prettyPrint: true, //config.nodeEnv !== 'production',
+                    logEvents: 'error' //['response', 'onPostStart']
+                }
+            },
+            // Routes
+            {
+                plugin: './routes/ping'
+            },
+            {
+                plugin: './routes/user'
+            },
+            // {
+            //     plugin: './routes/movie'
+            // }
+        ]
+    }
 }

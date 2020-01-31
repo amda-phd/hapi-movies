@@ -47,7 +47,7 @@ userSchema.methods.toJSON = function () {
 userSchema.methods.generateAuthToken = async function () {
     const user = this
 
-    const token = jwt.sign({ _id: user._id.toString() }, config.jwtSecret, { expiresIn: '12h' })
+    const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET, { expiresIn: '12h' })
 
     user.tokens = user.tokens.concat({ token })
     await user.save()
@@ -55,13 +55,29 @@ userSchema.methods.generateAuthToken = async function () {
     return token
 };
 
+// STATICS
+userSchema.statics.findByCredentials = async function (name, password) {
+    const User = this;
+    const user = await User.findOne({ name });
+    if (!user) throw Boom.unauthorized('Invalid credentials')
+
+    const isMatch = await bcrypt.compare(password, user.password)
+    if (!isMatch) throw Boom.unauthorized('Invalid credentials')
+
+    return user;
+}
+
 // MIDDLEWARE
 // Hash any newly created password before we store it in our database
 userSchema.pre('save', async function (next) {
     const user = this
-    if (user.isModified('password')) {
-        user.password = await bcrypt.hash(user.password, 8)
-    }
+
+    const previousUser = await User.findOne({ name: user.name })
+    console.log(previousUser)
+    if (previousUser) throw Boom.badRequest('Name unavailable')
+
+    if (user.isModified('password')) user.password = await bcrypt.hash(user.password, 8)
+
     next()
 })
 

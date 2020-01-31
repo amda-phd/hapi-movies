@@ -1,6 +1,6 @@
 const Boom = require('@hapi/boom');
 
-const UserInput = require('../validators/user');
+const { UserInput, UserPatch} = require('../validators/user');
 const User = require('../models/user');
 
 const register = async (server, options) => {
@@ -16,6 +16,7 @@ const register = async (server, options) => {
                     const token = await user.generateAuthToken();
                     return h.response({ user, token }).code(201);
                 } catch (error) {
+                    if (Boom.isBoom(error)) return error;
                     throw Boom.internal(error);
                 }
             },
@@ -37,6 +38,7 @@ const register = async (server, options) => {
                     const token = await user.generateAuthToken();
                     return h.response({ user, token }).code(200);
                 } catch (error) {
+                    if (Boom.isBoom(error)) return error;
                     throw Boom.notFound('User not found')
                 }
             },
@@ -54,10 +56,11 @@ const register = async (server, options) => {
             path: '/users/logout',
             handler: async (request, h) => {
                 try {
-                    request.auth.credentials.user.tokens = request.auth.credentials.user.tokends.filter(token => token.token !== request.auth.credentials.token);
+                    request.auth.credentials.user.tokens = request.auth.credentials.user.tokens.filter(token => token.token !== request.auth.credentials.token);
                     await request.auth.credentials.user.save();
                     return h.response().code(200);
                 } catch (error) {
+                    if (Boom.isBoom(error)) return error;
                     throw Boom.internal(error)
                 }
             },
@@ -75,6 +78,7 @@ const register = async (server, options) => {
                     await request.auth.credentials.user.save();
                     return h.response().code(200);
                 } catch (error) {
+                    if (Boom.isBoom(error)) return error;
                     throw Boom.internal(error)
                 }
             },
@@ -86,14 +90,40 @@ const register = async (server, options) => {
         }, {
             method: 'GET',
             path: '/users/me',
-            options: {
-                handler: async (request, h) => {
-                    const user = request.auth.credentials.user;
-                    return h.response({ user }).code(200)
-                },
+            handler: async (request, h) => {
+                console.log(request.auth.credentials)
+                const { user } = request.auth.credentials;
+                return h.response({ user }).code(200)
+            },
+            options: {              
                 tags: ['api', 'user'],
                 description: 'Check your own user account',
                 notes: 'You have to be logged in and you cannot check other users accounts'
+            }
+        }, {
+            method: 'PATCH',
+            path: '/users/me',
+            handler: async (request, h) => {
+                const { user } = request.auth.credentials;
+                const checkUser = await User.findByCredentials(user.name, request.payload.oldPassword);
+                if (!checkUser) throw Boom.unauthorized('You need to provide your previous password')
+
+                try {
+                    user.password = request.payload.newPassword;
+                    await user.save();
+                    return h.response({ user }).code(200)
+                } catch (error) {
+                    if (Boom.isBoom(error)) return error;
+                    throw Boom.internal(error);
+                }
+            },
+            options: {
+                tags: ['api', 'user'],
+                description: 'Change your password',
+                notes: 'Even if you are logged in, you have to provide a valid old password',
+                validate: {
+                    payload: UserPatch
+                }
             }
         }, {
             method: 'DELETE',
@@ -103,6 +133,7 @@ const register = async (server, options) => {
                     await request.auth.credentials.user.remove();
                     return h.response({ user: request.auth.credentials.user }).code(200);
                 } catch (error) {
+                    if (Boom.isBoom(error)) return error;
                     throw Boom.internal(error);
                 }
             },
