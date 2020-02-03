@@ -53,9 +53,9 @@ module.exports = {
             {
                 plugin: './routes/user'
             },
-            // {
-            //     plugin: './routes/movie'
-            // }
+            {
+                plugin: './routes/movie'
+            }
         ]
     }
 }

@@ -56,9 +56,9 @@ userSchema.methods.generateAuthToken = async function () {
 };
 
 // STATICS
-userSchema.statics.findByCredentials = async function (name, password) {
+userSchema.statics.findByCredentials = async function (username, password) {
     const User = this;
-    const user = await User.findOne({ name });
+    const user = await User.findOne({ username });
     if (!user) throw Boom.unauthorized('Invalid credentials')
 
     const isMatch = await bcrypt.compare(password, user.password)
@@ -72,10 +72,13 @@ userSchema.statics.findByCredentials = async function (name, password) {
 userSchema.pre('save', async function (next) {
     const user = this
 
-    const previousUser = await User.findOne({ name: user.name })
-    console.log(previousUser)
-    if (previousUser) throw Boom.badRequest('Name unavailable')
+    // Avoid duplicated usernames
+    if (user.isNew) {
+        const previousUser = await User.findOne({ username: user.username })
+        if (previousUser) throw Boom.badRequest('Name unavailable')
+    }
 
+    // Hash any new password
     if (user.isModified('password')) user.password = await bcrypt.hash(user.password, 8)
 
     next()

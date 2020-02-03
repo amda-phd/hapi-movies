@@ -14,7 +14,10 @@ const register = async (server, options) => {
                 try {
                     await user.save();
                     const token = await user.generateAuthToken();
-                    return h.response({ user, token }).code(201);
+
+                    const message = `Hi, ${user.username}! Welcome to hAPI-movies. Your user has been created successfully. Your token for this sesssion is ${token}. Have a great time watching films with us!`
+                    
+                    return h.response({ user, token, message }).code(201);
                 } catch (error) {
                     if (Boom.isBoom(error)) return error;
                     throw Boom.internal(error);
@@ -34,9 +37,10 @@ const register = async (server, options) => {
             path: '/users/login',
             handler: async (request, h) => {
                 try {
-                    const user = await User.findByCredentials(request.payload.name, request.payload.password);
+                    const user = await User.findByCredentials(request.payload.username, request.payload.password);
                     const token = await user.generateAuthToken();
-                    return h.response({ user, token }).code(200);
+                    const message = `Hi, ${user.username}! It's great to see you back in hAPI-movies. Your token for this sesssion is ${token}. Have a great time watching films with us!`
+                    return h.response({ user, token, message }).code(200);
                 } catch (error) {
                     if (Boom.isBoom(error)) return error;
                     throw Boom.notFound('User not found')
@@ -58,7 +62,8 @@ const register = async (server, options) => {
                 try {
                     request.auth.credentials.user.tokens = request.auth.credentials.user.tokens.filter(token => token.token !== request.auth.credentials.token);
                     await request.auth.credentials.user.save();
-                    return h.response().code(200);
+                    const message = `Cheers, ${request.auth.credentials.user.username}! Come back soon.`
+                    return h.response({ message }).code(200);
                 } catch (error) {
                     if (Boom.isBoom(error)) return error;
                     throw Boom.internal(error)
@@ -76,7 +81,8 @@ const register = async (server, options) => {
                 try {
                     request.auth.credentials.user.tokens = [];
                     await request.auth.credentials.user.save();
-                    return h.response().code(200);
+                    const message = `Cheers, ${request.auth.credentials.user.username}! All your previous tokens have been revoked. Don't forget to login the next time you want to use hAPI-movies. Come back soon.`
+                    return h.response({ message }).code(200);
                 } catch (error) {
                     if (Boom.isBoom(error)) return error;
                     throw Boom.internal(error)
@@ -93,7 +99,8 @@ const register = async (server, options) => {
             handler: async (request, h) => {
                 console.log(request.auth.credentials)
                 const { user } = request.auth.credentials;
-                return h.response({ user }).code(200)
+                const message = `This is you :)`
+                return h.response({ user, message }).code(200)
             },
             options: {              
                 tags: ['api', 'user'],
@@ -105,13 +112,15 @@ const register = async (server, options) => {
             path: '/users/me',
             handler: async (request, h) => {
                 const { user } = request.auth.credentials;
-                const checkUser = await User.findByCredentials(user.name, request.payload.oldPassword);
+                const checkUser = await User.findByCredentials(user.username, request.payload.oldPassword);
                 if (!checkUser) throw Boom.unauthorized('You need to provide your previous password')
 
                 try {
                     user.password = request.payload.newPassword;
+                    
                     await user.save();
-                    return h.response({ user }).code(200)
+                    const message = `${user.username}, your new password has been saved successfully. Keep enjoying hAPI-movies.`
+                    return h.response({ user, message }).code(200)
                 } catch (error) {
                     if (Boom.isBoom(error)) return error;
                     throw Boom.internal(error);
@@ -131,7 +140,8 @@ const register = async (server, options) => {
             handler: async (request, h) => {
                 try {
                     await request.auth.credentials.user.remove();
-                    return h.response({ user: request.auth.credentials.user }).code(200);
+                    const message = `We're sorry to see you go, ${request.auth.credentials.user.username}. Never stop enjoying great cinema, even if you're not with us anymore.`
+                    return h.response({ user: request.auth.credentials.user, message }).code(200);
                 } catch (error) {
                     if (Boom.isBoom(error)) return error;
                     throw Boom.internal(error);
