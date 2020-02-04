@@ -4,7 +4,7 @@
   "description": "video killed the radio star",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "env-cmd -f ./config/test.env lab -t 100",
     "start": "node index.js",
     "dev": "env-cmd -f ./config/dev.env nodemon index.js"
   },
@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/amda-phd/hapi-movies#readme",
   "devDependencies": {
+    "@hapi/lab": "^21.0.0",
     "env-cmd": "^10.0.1",
     "nodemon": "^2.0.2"
   },

@@ -8,12 +8,10 @@ const register = async (server, options) => {
         allowQueryToken: true,
         validate: async (request, token, h) => {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            console.log(decoded)
             const user = await User.findOne({
                 _id: decoded._id,
                 'tokens.token': token
             })
-            console.log(user)
             if (!user) return { isValid: false, credentials: token }
             return { isValid: true, credentials: { user, token } }
         }

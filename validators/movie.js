@@ -14,11 +14,7 @@ const MovieInput = Joi.object({
         .string()
         .valid('Terror', 'Drama', 'Comedia', 'Acción', 'Desconocido')
         .optional()
-        .description('If you dont know the genre, "Desconocido" will be set as default'),
-    poster: Joi
-        .any()
-        .optional()
-        .description('Choose a file and we will turn it into a buffer for it to be storaged in our database')
+        .description('If you dont know the genre, "Desconocido" will be set as default')
 })
 .required()
 .label('Movie')

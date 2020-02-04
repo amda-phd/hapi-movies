@@ -2,6 +2,7 @@ const HapiSwagger = require('hapi-swagger');
 const HapiPino = require('hapi-pino');
 const Vision = require('@hapi/vision');
 const Inert = require('@hapi/inert');
+const Path = require('path');
 
 const swaggerOptions = {
     info: {
@@ -19,9 +20,15 @@ const swaggerOptions = {
 module.exports = {
     server: {
         host: process.env.HAPI_HOST,
-        port: process.env.HAPI_PORT
+        port: process.env.HAPI_PORT,
+        routes: {
+            files: {
+                relativeTo: Path.join(__dirname, 'posters')
+            }
+        }
     },
     register: {
+        
         plugins: [
             // Custom JSON Web Token Bearer plugin saved as plugin for simpler operation
             {

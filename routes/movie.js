@@ -1,4 +1,5 @@
 const Boom = require('@hapi/boom');
+const fs = require('fs');
 
 const { MovieInput, MovieIdInput, MovieQuery } = require('../validators/movie');
 const Movie = require('../models/movie');
@@ -98,7 +99,7 @@ const register = async (server, options) => {
                 let movies = await Movie.find({ });
 
                 // Some super basic logic for the possible queries
-                if (genre) movies = movies.filter(movie => genre.includes(movie.genre));
+                if (genre) movies = movies.filter(movie => genre.toLowerCase().includes(movie.genre.toLowerCase()));
                 if (letter) movies = movies.filter(movie => movie.title[0].toLowerCase() === letter.toLowerCase());
                 if (name) movies = movies.filter(movie => movie.title.toLowerCase().includes(name.toLowerCase()));
                 if (skip) movies = movies.slice(skip);
@@ -119,6 +120,90 @@ const register = async (server, options) => {
                 validate: {
                     query: MovieQuery
                 }
+            }
+        }, {
+            method: 'POST',
+            path: '/movies/{movie_id}/poster',
+            handler: async (request, h) => {
+                const _id = request.params.movie_id;
+                const movie = await Movie.findById(_id);
+                if (!movie) throw Boom.notFound('Invalid movie id')
+
+                const { payload } = request;
+                movie.poster = payload.file;
+
+                try {
+                    await movie.handlePosterUpload()
+                    await movie.save();
+                    const message = `Poster uploaded correctly`;
+                    return h.response({ message }).code(200);
+                } catch (error) {
+                    if (Boom.isBoom(error)) return error;
+                    throw Boom.internal(error);
+                }              
+            },
+            options: {
+                tags: ['api', 'movie'],
+                description: 'Upload the poster for an already created movie.',
+                notes: 'Only logged users can add posters',
+                validate: {
+                    params: {
+                        movie_id: MovieIdInput
+                    }
+                }
+            }
+        }, {
+            method: 'DELETE',
+            path: '/movies/{movie_id}/poster',
+            handler: async (request, h) => {
+                const _id = request.params.movie_id;
+                const movie = await Movie.findById(_id);
+                if (!movie) throw Boom.notFound('Invalid movie id');
+                if (!movie.poster) throw Boom.notFound('No poster for this movie jet');
+
+                try {
+                    await movie.removePoster();
+                    await movie.save();
+                    const message = `Poster deleted correctly`;
+                    return h.response({ message }).code(200);
+
+                } catch (error) {
+                    if (Boom.isBoom(error)) return error;
+                    throw Boom.internal(error);
+                }              
+            },
+            options: {
+                tags: ['api', 'movie'],
+                description: 'Delete a poster for an already created movie.',
+                notes: 'Only logged users can manipulate posters',
+                validate: {
+                    params: {
+                        movie_id: MovieIdInput
+                    }
+                }
+            }
+        }, {
+            method: 'GET',
+            path: '/movies/{movie_id}/poster',
+            handler: async (request, h) => {
+                const _id = request.params.movie_id;
+                const movie = await Movie.findById(_id);
+                if (!movie) throw Boom.notFound('Invalid movie id')
+                if (!movie.poster) throw Boom.notFound('No poster for this movie jet');
+
+                try {
+                    return h.file(`../posters/${_id}.jpg`);
+                } catch (error) {
+                    if (Boom.isBoom(error)) return error;
+                    throw Boom.internal(error);
+                }            
+                
+            },
+            options: {
+                auth: false,
+                tags: ['api', 'movie'],
+                description: 'Check the poster for a given movie',
+                notes: 'No logging required for this route',
             }
         }
     ])

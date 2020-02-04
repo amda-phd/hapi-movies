@@ -97,7 +97,6 @@ const register = async (server, options) => {
             method: 'GET',
             path: '/users/me',
             handler: async (request, h) => {
-                console.log(request.auth.credentials)
                 const { user } = request.auth.credentials;
                 const message = `This is you :)`
                 return h.response({ user, message }).code(200)
