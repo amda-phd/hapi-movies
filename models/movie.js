@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Joigoose = require('joigoose')(mongoose);
 const Boom = require('@hapi/boom');
 const fs = require('fs');
+const Path = require('path');
 
 const { MovieInput } = require('../validators/movie');
 
@@ -22,6 +23,8 @@ movieSchema.pre('save', async function (next) {
 
     // Avoid duplicates
     if (movie.isNew) {
+        if (!movie.title) throw Boom.badRequest('Each movie needs its title.')
+
         const previousMovie = await Movie.findOne({ title: movie.title });
         if (previousMovie) throw Boom.badRequest(`The film '${movie.title}' already exists in our database.`)
     }
@@ -54,7 +57,19 @@ movieSchema.methods.handlePosterUpload = function () {
     })
 }
 
-movieSchema.methods.removePoster = function () {
+movieSchema.methods.servePoster = async function() {
+    const movie = this;
+    const poster = fs.statSync(Path.join(__dirname, `../posters/${movie._id}.jpg`))
+
+    if (poster.isFile()) return `../posters/${movie._id}.jpg`
+    throw Boom.notFound('No poster for this movie jet')
+}
+
+movieSchema.methods.removePoster = function () {  
+    const movie = this;
+    const poster = fs.statSync(Path.join(__dirname, `../posters/${movie._id}.jpg`))
+    if (!poster.isFile()) throw Boom.notFound('No poster for this movie. Nothing to remove')
+
     return new Promise((resolve, reject) => {
         fs.unlink(`./posters/${this._id}.jpg`, error => {
             if (error) reject(error)

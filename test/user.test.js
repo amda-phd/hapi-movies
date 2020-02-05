@@ -1,6 +1,6 @@
 const { expect } = require('@hapi/code');
 const Lab = require('@hapi/lab');
-const { afterEach, beforeEach, before, describe, it } = exports.lab = Lab.script();
+const { afterEach, beforeEach, describe, it } = exports.lab = Lab.script();
 const { init } = require('../server');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');

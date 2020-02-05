@@ -4,8 +4,8 @@ Joi.objectId = require('joi-objectid')(Joi);
 const MovieInput = Joi.object({
     title: Joi
         .string()
-        .required()
-        .description('Use the title to add, modify and find movies'),
+        .optional()
+        .description('This field will be mandatory in order to create a new entry'),
     plot: Joi
         .string()
         .optional()

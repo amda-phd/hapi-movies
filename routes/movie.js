@@ -135,7 +135,7 @@ const register = async (server, options) => {
                 try {
                     await movie.handlePosterUpload()
                     await movie.save();
-                    const message = `Poster uploaded correctly`;
+                    const message = `Poster uploaded correctly. Use GET on this route to check it out.`;
                     return h.response({ message }).code(200);
                 } catch (error) {
                     if (Boom.isBoom(error)) return error;
@@ -146,6 +146,10 @@ const register = async (server, options) => {
                 tags: ['api', 'movie'],
                 description: 'Upload the poster for an already created movie.',
                 notes: 'Only logged users can add posters',
+                payload: {
+                    maxBytes: 250000,
+                    defaultContentType: 'image/jpeg'
+                },
                 validate: {
                     params: {
                         movie_id: MovieIdInput
@@ -159,7 +163,6 @@ const register = async (server, options) => {
                 const _id = request.params.movie_id;
                 const movie = await Movie.findById(_id);
                 if (!movie) throw Boom.notFound('Invalid movie id');
-                if (!movie.poster) throw Boom.notFound('No poster for this movie jet');
 
                 try {
                     await movie.removePoster();
@@ -189,11 +192,13 @@ const register = async (server, options) => {
                 const _id = request.params.movie_id;
                 const movie = await Movie.findById(_id);
                 if (!movie) throw Boom.notFound('Invalid movie id')
-                if (!movie.poster) throw Boom.notFound('No poster for this movie jet');
 
                 try {
-                    return h.file(`../posters/${_id}.jpg`);
+                    const posterPath = await movie.servePoster();
+                    console.log(posterPath)
+                    return h.file(posterPath);
                 } catch (error) {
+                    console.log(error)
                     if (Boom.isBoom(error)) return error;
                     throw Boom.internal(error);
                 }            

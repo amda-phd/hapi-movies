@@ -1,6 +1,6 @@
 const { expect } = require('@hapi/code');
 const Lab = require('@hapi/lab');
-const { afterEach, beforeEach, before, describe, it } = exports.lab = Lab.script();
+const { afterEach, beforeEach, describe, it } = exports.lab = Lab.script();
 const { init } = require('../server');
 
 const {
@@ -46,7 +46,7 @@ describe('Movie routes', () => {
         expect(movie.creator).to.equal(userOneId);
     });
 
-    it('Should edit a movie if the user is logged in and the title and id are known', async () => {
+    it('Should edit a movie if the user is logged in and its id is known', async () => {
         const res = await server.inject({
             method: 'PATCH',
             url: `/movies/${movieThreeId}`,
@@ -54,7 +54,6 @@ describe('Movie routes', () => {
                 'authorization': `Bearer ${userOne.tokens[0].token}`
             },
             payload: {
-                title: 'Star Wars, Episode V: The Empire Strikes Back',
                 plot: 'Family reunion goes wrong'
             }
         });

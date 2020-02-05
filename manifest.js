@@ -21,6 +21,7 @@ module.exports = {
     server: {
         host: process.env.HAPI_HOST,
         port: process.env.HAPI_PORT,
+        // Public routes
         routes: {
             files: {
                 relativeTo: Path.join(__dirname, 'posters')
@@ -34,10 +35,11 @@ module.exports = {
             {
                 plugin: './plugins/authWrapper'
             },
-            // Documentation via Swagger
+            // Serve static files, like posters
             {
                 plugin: Inert
             },
+            // Documentation via Swagger
             {
                 plugin: Vision
             },
