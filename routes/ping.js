@@ -9,6 +9,7 @@ const register = async (server, options) => {
                 handler: async (request, h) => {
                     return h.response({ ping: 'pong' }).code(200)
                 },
+                auth: false,
                 tags: ['api'],
                 description: 'Check server health without auth',
                 notes: 'Empty'
