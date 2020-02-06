@@ -20,7 +20,7 @@ const swaggerOptions = {
 module.exports = {
     server: {
         host: process.env.HAPI_HOST,
-        port: process.env.HAPI_PORT,
+        port: process.env.PORT,
         // Public routes
         routes: {
             files: {
