@@ -36,11 +36,11 @@
     "@hapi/joi": "^15.1.1",
     "@hapi/vision": "^5.5.4",
     "bcryptjs": "^2.4.3",
-    "hapi-auth-bearer-token": "^6.2.1",
+    "hapi-auth-bearer-token": "^8.0.0",
     "hapi-pino": "^6.3.0",
-    "hapi-swagger": "^10.3.0",
+    "hapi-swagger": "^14.5.5",
     "joi-objectid": "^3.0.1",
-    "joigoose": "^4.0.8",
+    "joigoose": "^8.0.2",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.8.10"
   }
